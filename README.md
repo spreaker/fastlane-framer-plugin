@@ -12,15 +12,13 @@ fastlane add_plugin framer
 
 ## About framer
 
-Create images combining app screenshots to templates to make a nice \"screenshot\" to upload in App Store
+Create images combining app screenshots to templates to make nice pictures to upload in App Store.
 
-**Note to author:** Add a more detailed description about this plugin here. If your plugin contains multiple actions, make sure to mention them here.
+It gives you the freedom to customize the looks of each image (your designers will love that!) while keep their generation fully automated.
 
 ## Example
 
 Check out the [example `Fastfile`](fastlane/Fastfile) to see how to use this plugin. Try it by cloning the repo, running `fastlane install_plugins` and `bundle exec fastlane test`. 
-
-**Note to author:** Please set up a sample project to make it easy for users to explore what your plugin does. Provide everything that is necessary to try out the plugin in this project (including a sample Xcode/Android project if necessary)
 
 ## Run tests for this plugin
 
