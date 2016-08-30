@@ -16,7 +16,6 @@ module Fastlane
       def self.run(params)
         source_folder = params[:source_folder]
         output_folder = params[:output_folder]
-        assets_folder = params[:assets_folder]
         template_folder = params[:template_folder]
         templates = []
 
@@ -43,7 +42,7 @@ module Fastlane
           UI.verbose "Saving to: #{output}"
 
           # Do the magic
-          self.combine(assets_folder, file, template, text, output)
+          self.combine(file, template, text, output)
 
           UI.verbose "Framed screenshot #{output}"
         end
@@ -67,7 +66,6 @@ module Fastlane
         templates = []
 
         Dir.glob("#{template_folder}/*.png") do |file|
-          next if File.basename(file) == "background.png"
 
           name = File.basename(file, ".png")
           UI.message "Loading template #{name}"
@@ -152,7 +150,7 @@ module Fastlane
         return file_path
       end
 
-      def self.combine(assets_folder, screenshot_file, template, text, output_file)
+      def self.combine(screenshot_file, template, text, output_file)
         # Get template image
         template_img = MiniMagick::Image.open(template.file)
 
@@ -174,10 +172,10 @@ module Fastlane
           text.gsub!(/(?<!\\)(')/) { |s| "\\#{s}" } # escape unescaped apostrophes with a backslash
 
           # Create image with text
-          text_img = MiniMagick::Image.open("#{assets_folder}/background.png")
+          text_img = MiniMagick::Image.open("#{Framer::ROOT}/assets/background.png")
           text_img.resize "2732x2732!" # Max space available. `!` says it should ignore the ratio
 
-          text_font = template.textFont.nil? ? "Helvetica" : File.join(assets_folder, template.textFont).to_s
+          text_font = template.textFont.nil? ? "Helvetica" : template.textFont
 
           text_img.combine_options do |c|
             c.font text_font
@@ -251,14 +249,6 @@ module Fastlane
             description: "Folder that contains frames",
             is_string: true,
             default_value: "./fastlane/framer/templates",
-            verify_block: proc do |value|
-              UI.user_error!("Couldn't find folder at path '#{value}'") unless File.exist?(value)
-            end),
-          FastlaneCore::ConfigItem.new(key: :assets_folder,
-            env_name: "FL_FRAMER_ASSETS_FOLDER",
-            description: "Folder that contains other assets",
-            is_string: true,
-            default_value: "./fastlane/framer/assets",
             verify_block: proc do |value|
               UI.user_error!("Couldn't find folder at path '#{value}'") unless File.exist?(value)
             end),
