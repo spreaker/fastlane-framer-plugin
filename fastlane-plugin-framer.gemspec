@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = %q{alessandro.calzavara@gmail.com}
 
   spec.summary       = %q{Create images combining app screenshots with templates to make nice pictures for the App Store}
-  spec.homepage      = "https://github.com/spreaker/fastlane-plugin-framer"
+  spec.homepage      = "https://github.com/spreaker/fastlane-framer-plugin"
   spec.license       = "MIT"
 
   spec.files         = Dir["lib/**/*"] + %w(README.md LICENSE)
