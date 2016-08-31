@@ -1,0 +1,35 @@
+{
+  "default": {
+    "text": {
+      "color": "#545454",
+      "padding": 20
+    },
+    "image": {
+      "offset": "+0+0",
+      "width": 0
+    }
+  },
+
+  "iPhone6s": {
+    "image": {
+      "offset": "+148+172",
+      "width": 457
+    },
+    "text": {
+      "offset_y": 1123,
+      "height": 210,
+      "size": 48
+    }
+  },
+  "iPadAir2": {
+    "image": {
+      "offset": "+375+203",
+      "width": 1299
+    },
+    "text": {
+      "offset_y": 1300,
+      "height": 200,
+      "size": 80
+    }
+  }
+}
