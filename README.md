@@ -36,6 +36,17 @@ Try them by cloning the repo, running `fastlane install_plugins` and `bundle exe
 
 In order to work, you need to configure each template and the text to draw in the final images.
 
+### Running parameters
+
+The **framer** action support 4 optional parameters (default values are used).
+
+| Option            | Description     | Default        |
+| ----------------- | -------- | ------------ |
+| `source_folder`   | path to the folder that contains raw screenshots and `text.json` file | `./fastlane/framer/screens` | 
+| `template_folder` | path to the folder that contains the templates images and configuration | `./fastlane/framer/templates` |
+| `output_folder`   | path to the folder that will contains the final images, framed. Used then by `deliver` | `./fastlane/screenshots` (default one for `deliver`) |
+| `output_suffix`   | filenam suffix for the framed images | `-framed` |
+
 ### Template Configuration
 
 In the template folder you choose, there must be a `Config.json` file (see [example](fastlane/demo-1/templates/Config.json)). In there you will found
