@@ -29,7 +29,7 @@ module Fastlane
           UI.message "Processing #{file}"
 
           template = self.find_template(templates, file)
-          text = self.find_text(file)
+          text = self.find_text(source_folder, file)
           output = self.find_output(source_folder, file, output_folder, params[:output_suffix])
 
           if template.nil?
@@ -65,7 +65,7 @@ module Fastlane
         # Detect available templates
         templates = []
 
-        Dir.glob("#{template_folder}/*.png") do |file|
+        Dir.glob("#{template_folder}/**/*.png") do |file|
 
           name = File.basename(file, ".png")
           UI.message "Loading template #{name}"
@@ -116,9 +116,16 @@ module Fastlane
         return templates.find { |template| template.size == size }
       end
 
-      def self.find_text(screenshot_file)
+      def self.find_text(source_dir, screenshot_file)
         directory = File.dirname(screenshot_file)
         strings_path = File.join(directory, "text.json")
+
+        while !File.exist?(strings_path) do
+          directory = File.dirname(directory)
+          break if directory == source_dir
+          strings_path = File.join(directory, "text.json")
+        end
+
         return nil unless File.exist?(strings_path)
 
         text = JSON.parse(File.read(strings_path))
@@ -145,7 +152,7 @@ module Fastlane
 
         # Ensure output dir exist
         folder = File.dirname(file_path)
-        Dir.mkdir(folder) unless File.exist?(folder)
+        self.create_dir_if_not_exists(folder)
 
         return file_path
       end
@@ -220,6 +227,15 @@ module Fastlane
         result_img.destroy!
         screenshot_img.destroy!
         template_img.destroy!
+      end
+
+      def self.create_dir_if_not_exists(path)
+        recursive = path.split('/')
+        directory = ''
+        recursive.each do |sub_directory|
+          directory += sub_directory + '/'
+          Dir.mkdir(directory) unless (File.directory? directory)
+        end
       end
 
       #####################################################

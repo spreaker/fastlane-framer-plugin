@@ -12,7 +12,7 @@ fastlane add_plugin framer
 
 ## About framer
 
-Create images combining app screenshots to templates to make nice pictures to upload in App Store.
+Create images combining app screenshots to templates to make nice pictures to upload in App Store or Google Play.
 
 ![Flow](assets/example-flow.png)
 
