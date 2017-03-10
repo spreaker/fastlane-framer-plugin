@@ -60,17 +60,19 @@ describe Fastlane::Actions::FramerAction do
 
   describe '#find_text' do
     it 'returns nil if text.json file is missing' do
+      dir = "spec/assets"
       file = "spec/assets/screen2/demo-5inc.png"
 
-      result = Fastlane::Actions::FramerAction.find_text(file)
+      result = Fastlane::Actions::FramerAction.find_text(dir, file)
 
       expect(result).to be_nil
     end
 
     it 'returns text from text.json file with keyword from filename' do
+      dir = "spec/assets"
       file = "spec/assets/screen+text/demo.png"
 
-      result = Fastlane::Actions::FramerAction.find_text(file)
+      result = Fastlane::Actions::FramerAction.find_text(dir, file)
 
       expect(result).to eq("This is the text to write")
     end
