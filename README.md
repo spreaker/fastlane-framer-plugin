@@ -79,7 +79,8 @@ There are keys for configuring screeshot and for the text.
 | Key            | Type     | Description        |
 | -------------- | --------:| ------------:|
 | `offset`       | String   | Pixel position in the format `+[X value]+[Y value]` |
-| `width`        | Number 	  | space available, in pixel, for the screen |
+| `width`        | Number   | space available, in pixel, for the screen |
+| `add_below`    | Boolean  | add screen below the template or not |
 
 #### Text
 

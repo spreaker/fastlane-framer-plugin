@@ -8,7 +8,7 @@ module Fastlane
       attr_accessor :size
 
       attr_accessor :file
-      attr_accessor :imageOffset, :imageWidth
+      attr_accessor :imageOffset, :imageWidth, :imageBelow
       attr_accessor :textOffsetX, :textOffsetY, :textWidth, :textHeight, :textPadding, :textSize, :textFont, :textColor
     end
 
@@ -90,6 +90,7 @@ module Fastlane
           # Set config
           template.imageOffset  = (config_custom['image'] && config_custom['image']['offset']) || (config_default['image'] && config_default['image']['offset'])
           template.imageWidth   = (config_custom['image'] && config_custom['image']['width']) || (config_default['image'] && config_default['image']['width'])
+          template.imageBelow   = (config_custom['image'] && config_custom['image']['add_below']) || (config_default['image'] && config_default['image']['add_below']) || false
 
           template.textColor    = (config_custom['text'] && config_custom['text']['color']) || (config_default['text'] && config_default['text']['color'])
           template.textFont     = (config_custom['text'] && config_custom['text']['font']) || (config_default['text'] && config_default['text']['font'])
@@ -158,6 +159,7 @@ module Fastlane
       end
 
       def self.combine(screenshot_file, template, text, output_file)
+
         # Get template image
         template_img = MiniMagick::Image.open(template.file)
 
@@ -168,11 +170,37 @@ module Fastlane
         screenshot_img.resize "#{template.imageWidth}x"
 
         # Put screenshot over template
-        result_img = template_img.composite(screenshot_img) do |c|
-          c.compose "Over"
-          c.geometry template.imageOffset.to_s
+        if template.imageBelow
+          
+          # Create a blank image
+          base_1_img = MiniMagick::Image.open("#{Framer::ROOT}/assets/background.png")
+          base_1_img.resize "#{template.size}!" # `!` says it should ignore the ratio
+
+          # Screenshot first
+          base_2_img = base_1_img.composite(screenshot_img) do |c|
+            c.compose "Over"
+            c.geometry template.imageOffset.to_s
+          end
+          
+          # Template second
+          result_img = base_2_img.composite(template_img) do |c|
+            c.compose "Over"
+          end
+
+          base_1_img.destroy!
+          base_2_img.destroy!
+
+        else
+
+          # Screenshot over template, in one shot
+          result_img = template_img.composite(screenshot_img) do |c|
+            c.compose "Over"
+            c.geometry template.imageOffset.to_s
+          end
+
         end
 
+        # Apply text, if any
         unless text.nil?
           # Clean text string before using it
           text.gsub! '\n', "\n"
@@ -227,6 +255,7 @@ module Fastlane
         result_img.destroy!
         screenshot_img.destroy!
         template_img.destroy!
+        
       end
 
       def self.create_dir_if_not_exists(path)
