@@ -3,7 +3,7 @@ lane :demo_1 do
     source_folder: "./fastlane/demo-1/screens",
     template_folder: "./fastlane/demo-1/templates",
     output_folder: "./fastlane/demo-1/final"
-    )
+  )
 end
 
 lane :demo_2 do
@@ -11,5 +11,5 @@ lane :demo_2 do
     source_folder: "./fastlane/demo-2/screens",
     template_folder: "./fastlane/demo-2/templates",
     output_folder: "./fastlane/demo-2/final"
-    )
+  )
 end
