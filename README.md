@@ -24,11 +24,11 @@ You can specify the position and the size of the screen in the template and (opt
 
 ## Example
 
-Check out the [example `Fastfile`](fastlane/Fastfile) to see how to use this plugin. 
+Check out the [example `Fastfile`](fastlane/Fastfile) to see how to use this plugin.
 
 There are 2 lanes, one for a simple flow (`demo-1`) and another with more languages and screens (`demo-2`).
 
-Try them by cloning the repo, running `fastlane install_plugins` and `bundle exec fastlane demo_1` or `bundle exec fastlane demo_2`. 
+Try them by cloning the repo, running `fastlane install_plugins` and `bundle exec fastlane demo_1` or `bundle exec fastlane demo_2`.
 
 ## Configuration
 
@@ -42,7 +42,7 @@ The **framer** action support 4 optional parameters (default values are used).
 
 | Option            | Description     | Default        |
 | ----------------- | -------- | ------------ |
-| `source_folder`   | path to the folder that contains raw screenshots and `text.json` file | `./fastlane/framer/screens` | 
+| `source_folder`   | path to the folder that contains raw screenshots and `text.json` file | `./fastlane/framer/screens` |
 | `template_folder` | path to the folder that contains the templates images and configuration | `./fastlane/framer/templates` |
 | `output_folder`   | path to the folder that will contains the final images, framed. Used then by `deliver` | `./fastlane/screenshots` (default one for `deliver`) |
 | `output_suffix`   | filenam suffix for the framed images | `-framed` |
@@ -101,6 +101,26 @@ If you want some text in the final framed images, you need to create a `text.jso
 `text.json` is a simple map where *key* is the part of the screenshot filename (I suggest the same string you use with the `snapshot()` command on your UI tests.
 The *value* can be any strings.
 
+### Colors
+
+You can customize the color of the text and the background color applyed below the template (if you have transparencies on the template, you can fill them with the background color).
+
+`colors.json` is a simple map where *key* is part of the screenshot filename. The *value* is a map with 2 optional keys, *text* and *background*.
+
+```
+{
+  "default": {
+    "background": "#00FFFF",
+    "text": "#FFFFFF"
+  },
+  "demo": {
+    "background": "#FF00FF",
+  }
+}
+```
+
+Default values can be defined inside the *default* map.
+
 ## Run tests for this plugin
 
 To run both the tests, and code style validation, run
@@ -108,7 +128,7 @@ To run both the tests, and code style validation, run
 rake
 ```
 
-To automatically fix many of the styling issues, use 
+To automatically fix many of the styling issues, use
 ```
 rubocop -a
 ```

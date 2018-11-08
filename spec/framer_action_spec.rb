@@ -13,44 +13,42 @@ describe Fastlane::Actions::FramerAction do
       result = Fastlane::Actions::FramerAction.load_templates('spec/assets/template2')
 
       expect(result.count).to be == 2
-      expect(result[0].name).to eq("iPadAir")
-      expect(result[0].size).to eq("2048x1536")
-      expect(result[1].name).to eq("iPhone5s")
-      expect(result[1].size).to eq("640x1136")
+      expect(result[0].name).to eq("iPhone5s")
+      expect(result[0].width).to eq(640)
+      expect(result[0].height).to eq(1136)
+      expect(result[1].name).to eq("iPadAir")
+      expect(result[1].width).to eq(2048)
+      expect(result[1].height).to eq(1536)
+
     end
   end
 
   describe '#find_template' do
-    it 'returns only the template that match by size' do
+    it 'returns only the template that match by name' do
       right = Fastlane::Actions::Template.new
-      right.name = "correct"
-      right.size = "640x1136"
+      right.name = "iPhone5s"
       wrong1 = Fastlane::Actions::Template.new
-      wrong1.name = "wrong 1"
-      wrong1.size = "640x960"
+      wrong1.name = "iPadAir"
       wrong2 = Fastlane::Actions::Template.new
-      wrong2.name = "wrong 2"
-      wrong2.size = "2048x1536"
+      wrong2.name = "iPhoneXsMax"
 
       templates = [wrong1, right, wrong2]
-      file = "spec/assets/screen2/demo-5inc.png"
+      file = "spec/assets/screen2/iPhone5s-demo.png"
 
       result = Fastlane::Actions::FramerAction.find_template(templates, file)
 
       expect(result).to be == right
-      expect(result.name).to eq("correct")
+      expect(result.name).to eq("iPhone5s")
     end
 
     it 'returns nil if no template is valid for a screenshot' do
       wrong1 = Fastlane::Actions::Template.new
-      wrong1.name = "wrong 1"
-      wrong1.size = "640x960"
+      wrong1.name = "iPadAir"
       wrong2 = Fastlane::Actions::Template.new
-      wrong2.name = "wrong 2"
-      wrong2.size = "2048x1536"
+      wrong2.name = "iPhoneXsMax"
 
       templates = [wrong1, wrong2]
-      file = "spec/assets/screen2/demo-5inc.png"
+      file = "spec/assets/screen2/iPhone5s-demo.png"
 
       result = Fastlane::Actions::FramerAction.find_template(templates, file)
 
@@ -61,7 +59,7 @@ describe Fastlane::Actions::FramerAction do
   describe '#find_text' do
     it 'returns nil if text.json file is missing' do
       dir = "spec/assets"
-      file = "spec/assets/screen2/demo-5inc.png"
+      file = "spec/assets/screen2/iPhone5s-demo.png"
 
       result = Fastlane::Actions::FramerAction.find_text(dir, file)
 
@@ -70,11 +68,43 @@ describe Fastlane::Actions::FramerAction do
 
     it 'returns text from text.json file with keyword from filename' do
       dir = "spec/assets"
-      file = "spec/assets/screen+text/demo.png"
+      file = "spec/assets/screen+text/iPhone5s-demo.png"
 
       result = Fastlane::Actions::FramerAction.find_text(dir, file)
 
       expect(result).to eq("This is the text to write")
+    end
+  end
+
+  describe '#find_colors' do
+    it 'returns default colors if colors.json file is missing' do
+      dir = "spec/assets"
+      file = "spec/assets/screen2/iPhone5s-demo.png"
+
+      result = Fastlane::Actions::FramerAction.find_colors(dir, file)
+
+      expect(result.text).to eq("#000000")
+      expect(result.background).to be_nil
+    end
+
+    it 'returns colors from colors.json file with default values' do
+      dir = "spec/assets"
+      file = "spec/assets/screen+colors/iPhone5s-demo2.png"
+
+      result = Fastlane::Actions::FramerAction.find_colors(dir, file)
+
+      expect(result.text).to eq("#FFFFFF")
+      expect(result.background).to eq("#00FFFF")
+    end
+
+    it 'returns colors from colors.json file with customized values' do
+      dir = "spec/assets"
+      file = "spec/assets/screen+colors/iPhone5s-demo1.png"
+
+      result = Fastlane::Actions::FramerAction.find_colors(dir, file)
+
+      expect(result.text).to eq("#FFFFFF")
+      expect(result.background).to eq("#FFFF00")
     end
   end
 
@@ -124,8 +154,26 @@ describe Fastlane::Actions::FramerAction do
         output_suffix: '-framed'
         })
 
-      output_file = "#{output_folder}/demo-framed.png"
+      output_file = "#{output_folder}/iPhone5s-demo-framed.png"
       expect(File.exist?(output_file)).to be == true
+
+      # Cleanup
+      Dir.glob("#{output_folder}/*.png").each { |filename| File.delete(filename) }
+    end
+
+    it 'should generate an image with colored text' do
+      output_folder = "spec/output"
+
+      Fastlane::Actions::FramerAction.run({
+        source_folder: 'spec/assets/screens+text+colors',
+        template_folder: 'spec/assets/template1',
+        assets_folder: 'lib/fastlane/plugin/framer/assets',
+        output_folder: output_folder,
+        output_suffix: '-framed'
+        })
+
+      expect(File.exist?("#{output_folder}/iPhone5s-demo1-framed.png")).to be == true
+      expect(File.exist?("#{output_folder}/iPhone5s-demo2-framed.png")).to be == true
 
       # Cleanup
       Dir.glob("#{output_folder}/*.png").each { |filename| File.delete(filename) }
@@ -142,8 +190,8 @@ describe Fastlane::Actions::FramerAction do
         output_suffix: '-framed'
         })
 
-      expect(File.exist?("spec/output/demo-5inc-framed.png")).to be == true
-      expect(File.exist?("spec/output/demo-9inc-framed.png")).to be == true
+      expect(File.exist?("spec/output/iPhone5s-demo-framed.png")).to be == true
+      expect(File.exist?("spec/output/iPadAir-demo-framed.png")).to be == true
 
       # Cleanup
       Dir.glob("#{output_folder}/*.png").each { |filename| File.delete(filename) }
@@ -160,7 +208,7 @@ describe Fastlane::Actions::FramerAction do
         output_suffix: '-framed'
         })
 
-      output_file = "spec/output/demo-framed.png"
+      output_file = "spec/output/iPhone5s-demo-framed.png"
       expect(File.exist?(output_file)).to be == true
 
       # Cleanup

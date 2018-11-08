@@ -3,13 +3,31 @@ require 'json'
 
 module Fastlane
   module Actions
+
     class Template
       attr_accessor :name
-      attr_accessor :size
+      attr_accessor :width, :height
 
       attr_accessor :file
       attr_accessor :imageOffset, :imageWidth, :imageBelow
-      attr_accessor :textOffsetX, :textOffsetY, :textWidth, :textHeight, :textPadding, :textSize, :textFont, :textColor
+      attr_accessor :textOffsetX, :textOffsetY, :textWidth, :textHeight, :textPadding, :textSize, :textFont
+    end
+
+    class Colors
+      attr_accessor :text, :background
+
+      def merge(other)
+        unless other.text.nil? || other.text.empty?
+          self.text = other.text
+        end
+        unless other.background.nil? || other.background.empty?
+          self.background = other.background
+        end
+      end
+
+      def to_s
+        "{ text: #{self.text}, background: #{self.background} }"
+      end
     end
 
     class FramerAction < Action
@@ -29,20 +47,23 @@ module Fastlane
           UI.message "Processing #{file}"
 
           template = self.find_template(templates, file)
-          text = self.find_text(source_folder, file)
-          output = self.find_output(source_folder, file, output_folder, params[:output_suffix])
-
           if template.nil?
             UI.error "Unable to find template for screenshot #{file}"
             next
           end
+          UI.verbose "Using template: #{template.name} (#{template.width}x#{template.height})"
 
-          UI.verbose "Using template: #{template.name} (#{template.size})"
+          text = self.find_text(source_folder, file)
           UI.verbose "Using text: #{text}"
+
+          colors = self.find_colors(source_folder, file)
+          UI.verbose "Using colors: #{colors}"
+
+          output = self.find_output(source_folder, file, output_folder, params[:output_suffix])
           UI.verbose "Saving to: #{output}"
 
           # Do the magic
-          self.combine(file, template, text, output)
+          self.combine(file, template, colors, text, output)
 
           UI.verbose "Framed screenshot #{output}"
         end
@@ -76,7 +97,8 @@ module Fastlane
 
           # Read template image size
           img = MiniMagick::Image.open(file)
-          template.size = "#{img.width}x#{img.height}"
+          template.width = img.width
+          template.height = img.height
           img.destroy!
 
           # Get template config
@@ -92,7 +114,6 @@ module Fastlane
           template.imageWidth   = (config_custom['image'] && config_custom['image']['width']) || (config_default['image'] && config_default['image']['width'])
           template.imageBelow   = (config_custom['image'] && config_custom['image']['add_below']) || (config_default['image'] && config_default['image']['add_below']) || false
 
-          template.textColor    = (config_custom['text'] && config_custom['text']['color']) || (config_default['text'] && config_default['text']['color'])
           template.textFont     = (config_custom['text'] && config_custom['text']['font']) || (config_default['text'] && config_default['text']['font'])
           template.textSize     = (config_custom['text'] && config_custom['text']['size']) || (config_default['text'] && config_default['text']['size'])
           template.textWidth    = (config_custom['text'] && config_custom['text']['width']) || (config_default['text'] && config_default['text']['width'])
@@ -108,22 +129,20 @@ module Fastlane
       end
 
       def self.find_template(templates, screenshot_file)
-        # Read screenshot image size
-        img = MiniMagick::Image.open(screenshot_file)
-        size = "#{img.width}x#{img.height}"
-        img.destroy!
+        # Read device name from file
+        filename = File.basename(screenshot_file)
+        device = filename.slice(0, filename.rindex('-'))
 
         # Search template that matches that size
-        return templates.find { |template| template.size == size }
+        return templates.find { |template| template.name == device }
       end
 
       def self.find_text(source_dir, screenshot_file)
         directory = File.dirname(screenshot_file)
         strings_path = File.join(directory, "text.json")
 
-        while !File.exist?(strings_path) do
+        while directory.start_with?(source_dir) && !File.exist?(strings_path) do
           directory = File.dirname(directory)
-          break if directory == source_dir
           strings_path = File.join(directory, "text.json")
         end
 
@@ -133,6 +152,46 @@ module Fastlane
 
         result = text.find { |k, v| File.basename(screenshot_file).upcase.include? k.upcase }
         return result.last if result
+      end
+
+      def self.find_colors(source_dir, screenshot_file)
+
+        # Default values
+        colors = Colors.new
+        colors.text = "#000000"
+        colors.background = nil
+
+        # Read values from file
+        directory = File.dirname(screenshot_file)
+        colors_path = File.join(directory, "colors.json")
+
+        while directory.start_with?(source_dir) && !File.exist?(colors_path) do
+          directory = File.dirname(directory)
+          colors_path = File.join(directory, "colors.json")
+        end
+
+        if File.exist?(colors_path)
+          config = JSON.parse(File.read(colors_path))
+
+          # Read default values
+          default = Colors.new
+          default.text = config['default']['text']
+          default.background = config['default']['background']
+          colors.merge(default)
+
+          # Read and apply override, if any
+          override = config.select { |k, v| File.basename(screenshot_file).upcase.include? k.upcase }.values.map { |value|
+            c = Colors.new
+            c.text = value['text']
+            c.background = value['background']
+            c
+          }
+          unless override.empty?
+            colors.merge(override.first)
+          end
+        end
+
+        return colors
       end
 
       def self.find_output(source_folder, screenshot_file, output_folder, output_suffix)
@@ -158,7 +217,19 @@ module Fastlane
         return file_path
       end
 
-      def self.combine(screenshot_file, template, text, output_file)
+      def self.combine(screenshot_file, template, colors, text, output_file)
+
+        # Prepare base image
+        result_img = MiniMagick::Image.open("#{Framer::ROOT}/assets/background.png")
+        result_img.resize "#{template.width}x#{template.height}!" # `!` says it should ignore the ratio
+
+        # Apply background color, if any
+        unless colors.background.nil?
+          result_img.combine_options do |c|
+            c.fill "#{colors.background}"
+            c.draw "rectangle 0,0,#{template.width},#{template.height}"
+          end
+        end
 
         # Get template image
         template_img = MiniMagick::Image.open(template.file)
@@ -171,29 +242,27 @@ module Fastlane
 
         # Put screenshot over template
         if template.imageBelow
-          
-          # Create a blank image
-          base_1_img = MiniMagick::Image.open("#{Framer::ROOT}/assets/background.png")
-          base_1_img.resize "#{template.size}!" # `!` says it should ignore the ratio
 
           # Screenshot first
-          base_2_img = base_1_img.composite(screenshot_img) do |c|
+          result_img = result_img.composite(screenshot_img) do |c|
             c.compose "Over"
             c.geometry template.imageOffset.to_s
           end
-          
+
           # Template second
-          result_img = base_2_img.composite(template_img) do |c|
+          result_img = result_img.composite(template_img) do |c|
             c.compose "Over"
           end
 
-          base_1_img.destroy!
-          base_2_img.destroy!
-
         else
 
-          # Screenshot over template, in one shot
-          result_img = template_img.composite(screenshot_img) do |c|
+          # Template first
+          result_img = result_img.composite(template_img) do |c|
+            c.compose "Over"
+          end
+
+          # Screenshot second
+          result_img = result_img.composite(screenshot_img) do |c|
             c.compose "Over"
             c.geometry template.imageOffset.to_s
           end
@@ -217,7 +286,7 @@ module Fastlane
             c.pointsize template.textSize.to_s
             c.gravity "Center"
             c.draw "text 0,0 '#{text}'"
-            c.fill template.textColor.to_s
+            c.fill colors.text.to_s
           end
           text_img.trim # remove white space
 
@@ -255,7 +324,7 @@ module Fastlane
         result_img.destroy!
         screenshot_img.destroy!
         template_img.destroy!
-        
+
       end
 
       def self.create_dir_if_not_exists(path)

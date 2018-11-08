@@ -1,0 +1,9 @@
+{
+    "default": {
+        "background": "#00FFFF",
+        "text": "#FFFFFF"
+    },
+    "demo1": {
+        "background": "#FFFF00"
+    }
+}
