@@ -36,6 +36,7 @@ module Fastlane
         output_folder = params[:output_folder]
         template_folder = params[:template_folder]
         templates = []
+        platform = Actions.lane_context[Actions::SharedValues::PLATFORM_NAME]
 
         # Read config
         UI.success "Fetching templates from #{template_folder}"
@@ -46,7 +47,7 @@ module Fastlane
         Dir.glob("#{source_folder}/**/*.png") do |file|
           UI.message "Processing #{file}"
 
-          template = self.find_template(templates, file)
+          template = self.find_template(templates, file, platform)
           if template.nil?
             UI.error "Unable to find template for screenshot #{file}"
             next
@@ -128,10 +129,18 @@ module Fastlane
         return templates
       end
 
-      def self.find_template(templates, screenshot_file)
-        # Read device name from file
-        filename = File.basename(screenshot_file)
-        device = filename.slice(0, filename.rindex('-'))
+      def self.find_template(templates, screenshot_file, platform)
+        if [:ios, :mac].include? platform
+          # Read device name from file
+          filename = File.basename(screenshot_file)
+          device = filename.slice(0, filename.rindex('-'))
+        elsif :android == platform
+          # Read device name from path
+          folder = File.basename(File.dirname(screenshot_file))
+          device = folder.slice(0, folder.rindex('S'))
+        else
+          UI.error "Unsupported platform"
+        end
 
         # Search template that matches that size
         return templates.find { |template| template.name == device }
