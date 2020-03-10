@@ -35,7 +35,7 @@ describe Fastlane::Actions::FramerAction do
       templates = [wrong1, right, wrong2]
       file = "spec/assets/screen2/iPhone5s-demo.png"
 
-      result = Fastlane::Actions::FramerAction.find_template(templates, file)
+      result = Fastlane::Actions::FramerAction.find_template(templates, file, :ios)
 
       expect(result).to be == right
       expect(result.name).to eq("iPhone5s")
@@ -50,7 +50,7 @@ describe Fastlane::Actions::FramerAction do
       templates = [wrong1, wrong2]
       file = "spec/assets/screen2/iPhone5s-demo.png"
 
-      result = Fastlane::Actions::FramerAction.find_template(templates, file)
+      result = Fastlane::Actions::FramerAction.find_template(templates, file, :ios)
 
       expect(result).to be_nil
     end
@@ -122,6 +122,9 @@ describe Fastlane::Actions::FramerAction do
   end
 
   describe '#run' do
+
+    Fastlane::Actions.lane_context[Fastlane::Actions::SharedValues::PLATFORM_NAME] = :ios
+
     it 'stops when Config.json is missing' do
       expect do
         Fastlane::Actions::FramerAction.run({
@@ -149,7 +152,6 @@ describe Fastlane::Actions::FramerAction do
       Fastlane::Actions::FramerAction.run({
         source_folder: 'spec/assets/screen1',
         template_folder: 'spec/assets/template1',
-        assets_folder: 'lib/fastlane/plugin/framer/assets',
         output_folder: output_folder,
         output_suffix: '-framed'
         })
@@ -167,7 +169,6 @@ describe Fastlane::Actions::FramerAction do
       Fastlane::Actions::FramerAction.run({
         source_folder: 'spec/assets/screens+text+colors',
         template_folder: 'spec/assets/template1',
-        assets_folder: 'lib/fastlane/plugin/framer/assets',
         output_folder: output_folder,
         output_suffix: '-framed'
         })
@@ -183,6 +184,7 @@ describe Fastlane::Actions::FramerAction do
       output_folder = "spec/output"
 
       Fastlane::Actions::FramerAction.run({
+        platform: :ios,
         source_folder: 'spec/assets/screen2',
         template_folder: 'spec/assets/template2',
         assets_folder: 'lib/fastlane/plugin/framer/assets',
@@ -201,6 +203,7 @@ describe Fastlane::Actions::FramerAction do
       output_folder = "spec/output"
 
       Fastlane::Actions::FramerAction.run({
+        platform: :ios,
         source_folder: 'spec/assets/screen+text',
         template_folder: 'spec/assets/template1',
         assets_folder: 'lib/fastlane/plugin/framer/assets',
