@@ -17,3 +17,5 @@ platform :ios do
       output_folder: "./fastlane/demo-2/final"
     )
   end
+
+end
