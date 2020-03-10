@@ -285,7 +285,7 @@ module Fastlane
           text.gsub!(/(?<!\\)(')/) { |s| "\\#{s}" } # escape unescaped apostrophes with a backslash
 
           # Create image with text
-          text_img = MiniMagick::Image.open("#{Framer::ROOT}/assets/background.png")
+          text_img = MiniMagick::Image.open("#{Framer::ROOT}/assets/transparent_text_background.png")
           text_img.resize "2732x2732!" # Max space available. `!` says it should ignore the ratio
 
           text_font = template.textFont.nil? ? "Helvetica" : template.textFont
