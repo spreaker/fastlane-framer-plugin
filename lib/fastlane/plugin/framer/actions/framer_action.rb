@@ -244,7 +244,7 @@ module Fastlane
         template_img = MiniMagick::Image.open(template.file)
 
         # Get screenshot image
-        screenshot_img = MiniMagick::Image.open(screenshot_file)
+        screenshot_img = MiniMagick::Image.open(screenshot_file).auto_orient
 
         # Resize screenshot to fit template
         screenshot_img.resize "#{template.imageWidth}x"
