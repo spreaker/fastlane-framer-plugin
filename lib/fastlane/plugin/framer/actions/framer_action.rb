@@ -235,6 +235,7 @@ module Fastlane
         # Apply background color, if any
         unless colors.background.nil?
           result_img.combine_options do |c|
+            c.define "png:color-type=2"
             c.fill "#{colors.background}"
             c.draw "rectangle 0,0,#{template.width},#{template.height}"
           end
@@ -244,7 +245,7 @@ module Fastlane
         template_img = MiniMagick::Image.open(template.file)
 
         # Get screenshot image
-        screenshot_img = MiniMagick::Image.open(screenshot_file)
+        screenshot_img = MiniMagick::Image.open(screenshot_file).auto_orient
 
         # Resize screenshot to fit template
         screenshot_img.resize "#{template.imageWidth}x"
