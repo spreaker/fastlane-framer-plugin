@@ -235,6 +235,7 @@ module Fastlane
         # Apply background color, if any
         unless colors.background.nil?
           result_img.combine_options do |c|
+            c.define "png:color-type=2"
             c.fill "#{colors.background}"
             c.draw "rectangle 0,0,#{template.width},#{template.height}"
           end
@@ -285,7 +286,7 @@ module Fastlane
           text.gsub!(/(?<!\\)(')/) { |s| "\\#{s}" } # escape unescaped apostrophes with a backslash
 
           # Create image with text
-          text_img = MiniMagick::Image.open("#{Framer::ROOT}/assets/transparent_text_background.png")
+          text_img = MiniMagick::Image.open("#{Framer::ROOT}/assets/background.png")
           text_img.resize "2732x2732!" # Max space available. `!` says it should ignore the ratio
 
           text_font = template.textFont.nil? ? "Helvetica" : template.textFont
