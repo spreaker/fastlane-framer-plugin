@@ -9,7 +9,9 @@ module Fastlane
       attr_accessor :width, :height
 
       attr_accessor :file
-      attr_accessor :imageOffset, :imageWidth, :imageBelow
+      attr_accessor :imageOffset, :imageWidth, :imageBelow, :imageRotation
+      attr_accessor :imagePreviousOffset, :imagePreviousWidth, :imagePreviousRotation
+      attr_accessor :imageNextOffset, :imageNextWidth, :imageNextRotation
       attr_accessor :textOffsetX, :textOffsetY, :textWidth, :textHeight, :textPadding, :textSize, :textFont
     end
 
@@ -35,6 +37,7 @@ module Fastlane
         source_folder = params[:source_folder]
         output_folder = params[:output_folder]
         template_folder = params[:template_folder]
+        list_files = Dir.glob("#{source_folder}/**/*.png").sort
         templates = []
         platform = Actions.lane_context[Actions::SharedValues::PLATFORM_NAME]
 
@@ -44,8 +47,8 @@ module Fastlane
 
         # Process each screen
         UI.success "Processing screenshots from #{source_folder}"
-        Dir.glob("#{source_folder}/**/*.png") do |file|
-          UI.message "Processing #{file}"
+        list_files.each_with_index do |file, index|
+          UI.message "Processing #{file} index #{index}"
 
           template = self.find_template(templates, file, platform)
           if template.nil?
@@ -57,14 +60,14 @@ module Fastlane
           text = self.find_text(source_folder, file)
           UI.verbose "Using text: #{text}"
 
-          colors = self.find_colors(source_folder, file)
+          colors = self.find_colors(source_folder, file, template_folder)
           UI.verbose "Using colors: #{colors}"
 
           output = self.find_output(source_folder, file, output_folder, params[:output_suffix])
           UI.verbose "Saving to: #{output}"
 
-          # Do the magic
-          self.combine(file, template, colors, text, output)
+          # # Do the magic
+          self.combine(file, template, colors, text, output, list_files, index)
 
           UI.verbose "Framed screenshot #{output}"
         end
@@ -74,7 +77,7 @@ module Fastlane
       end
 
       def self.load_templates(template_folder)
-        json_file_path = "#{template_folder}/Config.json"
+        json_file_path = "#{template_folder}/config.json"
 
         UI.user_error!("Missing Config.json file in template folder") unless File.exist?(json_file_path)
 
@@ -86,7 +89,6 @@ module Fastlane
 
         # Detect available templates
         templates = []
-
         Dir.glob("#{template_folder}/**/*.png") do |file|
 
           name = File.basename(file, ".png")
@@ -110,18 +112,30 @@ module Fastlane
             next
           end
 
-          # Set config
-          template.imageOffset  = (config_custom['image'] && config_custom['image']['offset']) || (config_default['image'] && config_default['image']['offset'])
-          template.imageWidth   = (config_custom['image'] && config_custom['image']['width']) || (config_default['image'] && config_default['image']['width'])
-          template.imageBelow   = (config_custom['image'] && config_custom['image']['add_below']) || (config_default['image'] && config_default['image']['add_below']) || false
+          # set image
+          template.imageOffset   = (config_custom['image'] && config_custom['image']['offset']) || (config_default['image'] && config_default['image']['offset'])
+          template.imageWidth    = (config_custom['image'] && config_custom['image']['width']) || (config_default['image'] && config_default['image']['width'])
+          template.imageBelow    = (config_custom['image'] && config_custom['image']['add_below']) || (config_default['image'] && config_default['image']['add_below']) || false
+          template.imageRotation = (config_custom['image'] && config_custom['image']['rotation']) || (config_default['image'] && config_default['image']['rotation'])
 
-          template.textFont     = (config_custom['text'] && config_custom['text']['font']) || (config_default['text'] && config_default['text']['font'])
-          template.textSize     = (config_custom['text'] && config_custom['text']['size']) || (config_default['text'] && config_default['text']['size'])
-          template.textWidth    = (config_custom['text'] && config_custom['text']['width']) || (config_default['text'] && config_default['text']['width'])
-          template.textHeight   = (config_custom['text'] && config_custom['text']['height']) || (config_default['text'] && config_default['text']['height'])
-          template.textPadding  = (config_custom['text'] && config_custom['text']['padding']) || (config_default['text'] && config_default['text']['padding']) || 0
-          template.textOffsetX  = (config_custom['text'] && config_custom['text']['offset_x']) || (config_default['text'] && config_default['text']['offset_x']) || 0
-          template.textOffsetY  = (config_custom['text'] && config_custom['text']['offset_y']) || (config_default['text'] && config_default['text']['offset_y']) || 0
+          # set image back
+          template.imagePreviousOffset   = (config_custom['image']['previous'] && config_custom['image']['previous']['offset']) || (config_default['image']['previous'] && config_default['image']['previous']['offset'])
+          template.imagePreviousWidth    = (config_custom['image']['previous'] && config_custom['image']['previous']['width']) || (config_default['image']['previous'] && config_default['image']['previous']['width'])
+          template.imagePreviousRotation = (config_custom['image']['previous'] && config_custom['image']['previous']['rotation']) || (config_default['image']['previous'] && config_default['image']['previous']['rotation'])
+
+          # set image next
+          template.imageNextOffset   = (config_custom['image']['next'] && config_custom['image']['next']['offset']) || (config_default['image']['next'] && config_default['image']['next']['offset'])
+          template.imageNextWidth    = (config_custom['image']['next'] && config_custom['image']['next']['width']) || (config_default['image']['next'] && config_default['image']['next']['width'])
+          template.imageNextRotation = (config_custom['image']['next'] && config_custom['image']['next']['rotation']) || (config_default['image']['next'] && config_default['image']['next']['rotation'])
+
+          # set font
+          template.textFont      = (config_custom['text'] && config_custom['text']['font']) || (config_default['text'] && config_default['text']['font'])
+          template.textSize      = (config_custom['text'] && config_custom['text']['size']) || (config_default['text'] && config_default['text']['size'])
+          template.textWidth     = (config_custom['text'] && config_custom['text']['width']) || (config_default['text'] && config_default['text']['width'])
+          template.textHeight    = (config_custom['text'] && config_custom['text']['height']) || (config_default['text'] && config_default['text']['height'])
+          template.textPadding   = (config_custom['text'] && config_custom['text']['padding']) || (config_default['text'] && config_default['text']['padding']) || 0
+          template.textOffsetX   = (config_custom['text'] && config_custom['text']['offset_x']) || (config_default['text'] && config_default['text']['offset_x']) || 0
+          template.textOffsetY   = (config_custom['text'] && config_custom['text']['offset_y']) || (config_default['text'] && config_default['text']['offset_y']) || 0
 
           templates << template
         end
@@ -163,7 +177,7 @@ module Fastlane
         return result.last if result
       end
 
-      def self.find_colors(source_dir, screenshot_file)
+      def self.find_colors(source_dir, screenshot_file, colors_dir)
 
         # Default values
         colors = Colors.new
@@ -172,7 +186,7 @@ module Fastlane
 
         # Read values from file
         directory = File.dirname(screenshot_file)
-        colors_path = File.join(directory, "colors.json")
+        colors_path = File.join(colors_dir, "colors.json")
 
         while directory.start_with?(source_dir) && !File.exist?(colors_path) do
           directory = File.dirname(directory)
@@ -226,7 +240,16 @@ module Fastlane
         return file_path
       end
 
-      def self.combine(screenshot_file, template, colors, text, output_file)
+      # Magic is HERE
+      def self.combine(screenshot_file, template, colors, text, output_file, list_files, index)
+
+        # Get list lenght
+        list_lenght = list_files.length()
+        
+        # Var  images
+        screenshot_img_back = nil
+        screenshot_img      = nil
+        screenshot_img_next = nil
 
         # Prepare base image
         result_img = MiniMagick::Image.open("#{Framer::ROOT}/assets/background.png")
@@ -243,20 +266,86 @@ module Fastlane
 
         # Get template image
         template_img = MiniMagick::Image.open(template.file)
+        
+        # Get back screenshot
+        unless template.imagePreviousOffset.nil?
+          if list_lenght >= index -1 
+            screenshot_img_back = MiniMagick::Image.open(list_files[index -1]).auto_orient
+            screenshot_img_back.resize "#{template.imagePreviousWidth}x"
+            unless template.imagePreviousRotation.nil?
+              screenshot_img_back.combine_options do |cmd|
+                cmd.background "rgba(255,255,255,0.0)" # transparent
+                cmd.rotate(template.imagePreviousRotation.to_f)
+              end
+            end
+          else
+            UI.error "Unable to find back screenshot index #{index-1} in #{list_lenght}"
+          end
+        end
 
         # Get screenshot image
         screenshot_img = MiniMagick::Image.open(screenshot_file).auto_orient
-
+        
         # Resize screenshot to fit template
         screenshot_img.resize "#{template.imageWidth}x"
+        
+        # rotate screenshot
+        unless template.imageRotation.nil?
+          screenshot_img.combine_options do |cmd|
+            cmd.background "rgba(255,255,255,0.0)" # transparent
+            cmd.rotate(template.imageRotation.to_f)
+          end
+        end
+
+        # Get next screenshot
+        unless template.imageNextOffset.nil?
+          if list_lenght >= index + 1 
+            image_path = list_files[index+1]
+            list_files.each_with_index do |_file, _index|
+              if _index === index
+                print("file: ", _file, " index ", _index, " my index ", index)
+              end
+            end
+            # print("aqui jovem: ", image_path, " list_lenght ", list_lenght, " index ", index)
+            screenshot_img_next = MiniMagick::Image.open(list_files[index]).auto_orient
+            screenshot_img_next.resize "#{template.imageNextWidth}x"
+            unless template.imageNextRotation.nil?
+              screenshot_img_next.combine_options do |cmd|
+                cmd.background "rgba(255,255,255,0.0)" # transparent
+                cmd.rotate(template.imageNextRotation.to_f)
+              end
+            end
+          else
+            UI.error "Unable to find next screenshot index #{index+1} in #{list_lenght}"
+          end
+        end
 
         # Put screenshot over template
         if template.imageBelow
+
+          # Screenshot back
+          unless screenshot_img_back.nil?
+            result_img = result_img.composite(screenshot_img_back) do |c|
+              c.compose "Over"
+              c.geometry template.imagePreviousOffset.to_s
+
+            end
+          end
 
           # Screenshot first
           result_img = result_img.composite(screenshot_img) do |c|
             c.compose "Over"
             c.geometry template.imageOffset.to_s
+
+          end
+
+          # Screenshot next
+          unless screenshot_img_next.nil?
+            result_img = result_img.composite(screenshot_img_next) do |c|
+              c.compose "Over"
+              c.geometry template.imageNextOffset.to_s
+
+            end
           end
 
           # Template second
@@ -271,10 +360,29 @@ module Fastlane
             c.compose "Over"
           end
 
-          # Screenshot second
+           # Screenshot back
+           unless screenshot_img_back.nil?
+            result_img = result_img.composite(screenshot_img_back) do |c|
+              c.compose "Over"
+              c.geometry template.imagePreviousOffset.to_s
+
+            end
+          end
+
+          # Screenshot first
           result_img = result_img.composite(screenshot_img) do |c|
             c.compose "Over"
             c.geometry template.imageOffset.to_s
+
+          end
+
+          # Screenshot next
+          unless screenshot_img_next.nil?
+            result_img = result_img.composite(screenshot_img_next) do |c|
+              c.compose "Over"
+              c.geometry template.imageNextOffset.to_s
+
+            end
           end
 
         end
@@ -294,7 +402,7 @@ module Fastlane
           text_img.combine_options do |c|
             c.font text_font
             c.pointsize template.textSize.to_s
-            c.gravity "Center"
+            c.gravity "NorthWest"
             c.draw "text 0,0 '#{text}'"
             c.fill colors.text.to_s
           end
@@ -351,11 +459,11 @@ module Fastlane
       #####################################################
 
       def self.description
-        "Create images combining app screenshots to templates to make a nice \'screenshot\' to upload in App Store"
+        "Create images combining app screenshots to templates to make a nice \'screenshot\' to upload in App Store and Google Play"
       end
 
       def self.authors
-        ["DrAL3X"]
+        ["DrAL3X", "AzureRodrigo"]
       end
 
       def self.available_options
