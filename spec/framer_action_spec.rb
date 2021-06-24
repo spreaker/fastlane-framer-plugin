@@ -80,8 +80,9 @@ describe Fastlane::Actions::FramerAction do
     it 'returns default colors if colors.json file is missing' do
       dir = "spec/assets"
       file = "spec/assets/screen2/iPhone5s-demo.png"
+      template = "spec/assets/template2/iPhone5s.png"
 
-      result = Fastlane::Actions::FramerAction.find_colors(dir, file)
+      result = Fastlane::Actions::FramerAction.find_colors(dir, file, template)
 
       expect(result.text).to eq("#000000")
       expect(result.background).to be_nil
@@ -89,9 +90,10 @@ describe Fastlane::Actions::FramerAction do
 
     it 'returns colors from colors.json file with default values' do
       dir = "spec/assets"
-      file = "spec/assets/screen+colors/iPhone5s-demo2.png"
-
-      result = Fastlane::Actions::FramerAction.find_colors(dir, file)
+      dir_template = "spec/assets/template2-color"
+      file = "spec/assets/screen1/iPhone5s-demo2.png"
+      
+      result = Fastlane::Actions::FramerAction.find_colors(dir, file, dir_template)
 
       expect(result.text).to eq("#FFFFFF")
       expect(result.background).to eq("#00FFFF")
@@ -99,9 +101,10 @@ describe Fastlane::Actions::FramerAction do
 
     it 'returns colors from colors.json file with customized values' do
       dir = "spec/assets"
-      file = "spec/assets/screen+colors/iPhone5s-demo1.png"
+      dir_template = "spec/assets/template2-color"
+      file = "spec/assets/screen/iPhone5s-demo1.png"
 
-      result = Fastlane::Actions::FramerAction.find_colors(dir, file)
+      result = Fastlane::Actions::FramerAction.find_colors(dir, file, dir_template)
 
       expect(result.text).to eq("#FFFFFF")
       expect(result.background).to eq("#FFFF00")
@@ -168,7 +171,7 @@ describe Fastlane::Actions::FramerAction do
 
       Fastlane::Actions::FramerAction.run({
         source_folder: 'spec/assets/screens+text+colors',
-        template_folder: 'spec/assets/template1',
+        template_folder: 'spec/assets/template1-color',
         output_folder: output_folder,
         output_suffix: '-framed'
         })
