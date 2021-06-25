@@ -1,0 +1,47 @@
+{
+  "default": {
+    "text": {
+      "padding": 20
+    },
+    "image": {
+      "offset": "+0+0",
+      "width": 0
+    }
+  },
+  "frame1": {
+    "image": {
+      "offset": "-127+800",
+      "width": 1085,
+      "rotation": 25.8,
+      "add_below": true
+    },
+    "text": {
+      "offset_x": -400,
+      "offset_y": 104,
+      "height": 304,
+      "size": 90,
+      "font": "Helvetica"
+    }
+  },
+  "frame2": {
+    "image": {
+      "offset": "+580+285",
+      "width": 765,
+      "rotation": -20.86,
+      "add_below": true,
+      "previous": {
+        "offset": "-1645+800",
+        "width": 1085,
+        "rotation": 25.8,
+        "add_below": true
+      }
+    },
+    "text": {
+      "offset_x": -200,
+      "offset_y": 1300,
+      "height": 304,
+      "size": 90,
+      "font": "Helvetica"
+    }
+  }
+}

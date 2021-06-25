@@ -1,0 +1,10 @@
+{
+  "default": {
+    "background": "#00aadd",
+    "text": "#FFFFFF"
+  },
+  "Iphone8-1": {
+    "background": "#FFFFAA",
+    "text": "#000000"
+  }
+}

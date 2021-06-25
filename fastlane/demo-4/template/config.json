@@ -1,0 +1,82 @@
+{
+  "default": {
+    "text": {
+      "padding": 20
+    },
+    "image": {
+      "offset": "+0+0",
+      "width": 0
+    }
+  },
+  "Iphone8-1": {
+    "image": {
+      "offset": "+470+235",
+      "width": 690,
+      "rotation": -12.58,
+      "add_below": true
+    },
+    "text": {
+      "offset_x": -200,
+      "offset_y": 1300,
+      "height": 304,
+      "size": 90,
+      "font": "Helvetica"
+    }
+  },
+  "Iphone8-2": {
+    "image": {
+      "offset": "+185+868",
+      "width": 690,
+      "rotation": 13.98,
+      "add_below": true,
+      "previous": {
+        "offset": "-873+238",
+        "width": 685,
+        "rotation": -12.58,
+        "add_below": true
+      }
+    },
+    "text": {
+      "offset_x": -350,
+      "offset_y": 104,
+      "height": 304,
+      "size": 90,
+      "font": "Helvetica"
+    }
+  },
+  "Iphone11-1": {
+    "image": {
+      "offset": "+190+780",
+      "width": 983,
+      "rotation": 11.66,
+      "add_below": true
+    },
+    "text": {
+      "offset_x": -350,
+      "offset_y": 104,
+      "height": 304,
+      "size": 90,
+      "font": "Helvetica"
+    }
+  },
+  "Iphone11-2": {
+    "image": {
+      "offset": "+505+755",
+      "width": 590,
+      "add_below": true,
+      "previous": {
+        "offset": "-1130+790",
+        "width": 983,
+        "rotation": 11.66,
+        "add_below": true
+      }
+    },
+    "text": {
+      "offset_x": 150,
+      "offset_y": 133,
+      "height": 304,
+      "size": 90,
+      "font": "Helvetica"
+    }
+  }
+}

@@ -1,6 +1,7 @@
 {
   "default": {
     "text": {
+      "color": "#545454",
       "padding": 0
     },
     "image": {
@@ -8,6 +9,7 @@
       "width": 0
     }
   },
+
   "iPhone5s": {
     "image": {
       "offset": "+100+100",
@@ -17,6 +19,17 @@
       "offset_y": 880,
       "height": 256,
       "size": 44
+    }
+  },
+  "iPadAir": {
+    "image": {
+      "offset": "+100+100",
+      "width": 1846
+    },
+    "text": {
+      "offset_y": 1125,
+      "height": 412,
+      "size": 60
     }
   }
 }

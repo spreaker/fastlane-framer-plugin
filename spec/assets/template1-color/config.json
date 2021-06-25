@@ -1,6 +1,7 @@
 {
   "default": {
     "text": {
+      "color": "#545454",
       "padding": 0
     },
     "image": {
@@ -8,6 +9,7 @@
       "width": 0
     }
   },
+
   "iPhone5s": {
     "image": {
       "offset": "+100+100",
